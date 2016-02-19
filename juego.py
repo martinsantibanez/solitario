@@ -22,6 +22,7 @@ class Juego:
 			for numcarta in range(pilaact+1): 
 				carta_ins = self.maz.cartas[0]
 				carta_ins.settopleft(xact, yact)
+				carta_ins.pila = pila
 				yact += DISTY_PILAS
 				pila.append(carta_ins)
 				self.maz.cartas.remove(carta_ins)
@@ -41,21 +42,9 @@ class Juego:
 			p_yi = PILAS_YINICIAL
 			p_yf = p_yi + TAMY_CARTA + (DISTY_PILAS*pilaact)
 			if(posx > p_xi and posx < p_xf and posy > p_yi and posy < p_yf):
-				# print pilaact
-				#revisar cartas pequenas
-				for numcarta in range(pilaact):
-					c_yi = p_yi+(DISTY_PILAS*numcarta)
-					c_yf = c_yi+DISTY_PILAS
-					if(posy > c_yi and posy < c_yf):
-						carta = numcarta
-				#revisar ultima carta
-				c_yi = p_yi+DISTY_PILAS*pilaact
-				c_yf = c_yi + TAMY_CARTA
-				if(posy > c_yi and posy < c_yf):
-					carta = pilaact
-				if(carta != -1):
-					return (pilaact, carta)
-		return (-1, -1)
+				print pilaact
+				return pilaact
+		return -1
 
 def main():
 	screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -70,15 +59,17 @@ def main():
 	numpila = 1
 	running = 1
 	pressed = 0
-	dragging = None
+	dragging = []
 	clicked_sprites = []
 	while running:
 		screen.blit(background, (0, 0)) # fondo
 		#eventos
 		keys = pygame.key.get_pressed()
 		if dragging:
-			print "xdxd"
-			dragging.setcenter(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+			desp = 0
+			for card in dragging:
+				card.setcenter(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]+desp)
+				desp += 20
 		#dibujar pilas
 		for p in j.pilas:
 			for c in p:
@@ -98,12 +89,27 @@ def main():
 				if clicked_sprites:
 					clickeada = clicked_sprites[-1]
 					if clickeada.estado == ARRIBA:
-						dragging = clickeada
+						clickea_index_pila = clickeada.pila.index(clickeada)
+						for cartasacar in clickeada.pila[clickea_index_pila:]:
+							#clickeada.pila.remove(cartasacar)
+							dragging.append(clickeada)
 					else:
-						clickeada.mostrar()
+						if clickeada == clickeada.pila[-1]:
+							clickeada.mostrar()
 			elif evento.type == pygame.MOUSEBUTTONUP:
+				pos = pygame.mouse.get_pos()
 				if dragging:
-					dragging = None
+					piladrop = j.pilas[j.check_pila_area(pos[0], pos[1])]
+					if(piladrop != -1):
+						for card in dragging:
+							card.pila.remove(card)
+							card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+							piladrop.append(card)
+							card.pila = piladrop
+						# piladrop.extend(dragging)
+
+
+				dragging = []
 				clicked_sprites = []
 
 

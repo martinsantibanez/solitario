@@ -6,6 +6,7 @@ from common import *
 #pinta TREBOL, PICA, CORAZON, DIAMANTE
 class Carta(pygame.sprite.Sprite):
 	def __init__(self, numero, pinta, posx=-1, posy=-1):
+		self.pila = -1
 		self.clicked = False
 		self.pinta = pinta
 		self.numero = numero
