@@ -1,0 +1,14 @@
+#pintas
+TREBOL = "T"
+PICA = "P"
+CORAZON = "C"
+DIAMANTE = "D"
+PINTAS = [TREBOL, PICA, CORAZON, DIAMANTE]
+
+#estado
+ARRIBA = 1
+ABAJO = 0
+
+#ventana
+WIDTH = 800
+HEIGHT = 600
