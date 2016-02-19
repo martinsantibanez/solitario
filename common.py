@@ -9,10 +9,13 @@ PICA = "P"
 CORAZON = "C"
 DIAMANTE = "D"
 PINTAS = [TREBOL, PICA, CORAZON, DIAMANTE]
+#colores
+NEGRO = 0
+ROJO = 1
 
 #estado
-ARRIBA = 1
 ABAJO = 0
+ARRIBA = 1
 
 #ventana
 WIDTH = 400

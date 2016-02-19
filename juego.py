@@ -43,6 +43,12 @@ class Juego:
 			if(posx > p_xi and posx < p_xf and posy > p_yi):
 				return pilaact
 		return -1
+	#Recibe 2 cartas y retorna si c2 se puede poner sobre c1
+	def matchable(self, c1, c2):
+		if(c1.color != c2.color and c1.numero+1 == c2.numero):
+			return True
+		else:
+			return False
 
 def main():
 	screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -79,9 +85,13 @@ def main():
 		for evento in pygame.event.get():
 			if evento.type == QUIT:
 				sys.exit(0)
+			elif evento.type == pygame.KEYDOWN:
+			        if evento.key == pygame.K_ESCAPE:
+			        	#TODO: resetear juego
+			            print "TODO"
 			elif evento.type == pygame.MOUSEBUTTONDOWN:
 				pos = pygame.mouse.get_pos()
-				#juntar todos los sprites y juntar los clickeados.
+				#juntar todos los sprites y guardar los clickeados.
 				for i in j.pilas:
 					for x in i:
 						if x.rect.collidepoint(pos):
@@ -90,32 +100,41 @@ def main():
 				if clicked_sprites:
 					clickeada = clicked_sprites[-1]
 					if clickeada.estado == ARRIBA:
-						clickea_index_pila = clickeada.pila.index(clickeada)
-						for cartasacar in clickeada.pila[clickea_index_pila:]:
-							#clickeada.pila.remove(cartasacar)
+						clickea_index_pila = clickeada.pila.index(clickeada) #obtener el indice de la ultima carta clickeada
+						for cartasacar in clickeada.pila[clickea_index_pila:]: #arrastrar desde la ultima hacia abajo
 							dragging.append(cartasacar)
-					else:
+					else: #si esta hacia abajo y se clickea voltearla
 						if clickeada == clickeada.pila[-1]:
 							clickeada.mostrar()
 			elif evento.type == pygame.MOUSEBUTTONUP:
 				pos = pygame.mouse.get_pos()
 				if dragging:
-					piladrop_index = j.check_pila_area(pos[0], pos[1])
-					# print piladrop_index
+					piladrop_index = j.check_pila_area(pos[0], pos[1]) 
 					piladrop = j.pilas[piladrop_index]
-					if(piladrop_index != -1):
-						for card in dragging:
-							card.pila.remove(card)
-							if(piladrop):
+					if(piladrop):
+						if(piladrop_index != -1 and j.matchable(dragging[0], piladrop[-1])):
+							for card in dragging:
+								card.pila.remove(card)
 								card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
-							else:
-								card.settopleft(PILAS_XINICIAL+(piladrop_index*DISTX_PILAS), PILAS_YINICIAL)
-							piladrop.append(card)
-							card.pila = piladrop
+								piladrop.append(card)
+								card.pila = piladrop
+						else:
+							for card in dragging:
+								card.settopleft(card.posfx, card.posfy)
+					else: #Si esta vacia, revisar que sea K 
+						if piladrop_index!=-1 and dragging[0].numero == 12:
+							for card in dragging:
+								card.pila.remove(card)
+								if(card == dragging[0]):
+									dragging[0].settopleft(PILAS_XINICIAL+(piladrop_index*DISTX_PILAS), PILAS_YINICIAL)
+								else:
+									card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+								piladrop.append(card)
+								card.pila = piladrop
 
-					else:
-						for card in dragging:
-							card.settopleft(card.posfx, card.posfy)
+						else:
+							for card in dragging:
+								card.settopleft(card.posfx, card.posfy)
 
 
 				dragging = []

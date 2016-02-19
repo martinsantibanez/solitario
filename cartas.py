@@ -9,6 +9,10 @@ class Carta(pygame.sprite.Sprite):
 		self.pila = -1
 		self.clicked = False
 		self.pinta = pinta
+		if pinta == TREBOL or pinta == PICA:
+			self.color = NEGRO
+		else:
+			self.color = ROJO
 		self.numero = numero
 		self.estado = ABAJO
 		# pygame
