@@ -12,3 +12,9 @@ ABAJO = 0
 #ventana
 WIDTH = 800
 HEIGHT = 600
+
+#distancias entre las cartas
+DISTX_PILAS = 50
+DISTY_PILAS = 10
+PILAS_XINICIAL = 100
+PILAS_YINICIAL = 100

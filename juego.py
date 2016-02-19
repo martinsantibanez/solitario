@@ -6,21 +6,21 @@ from const import *
 
 
 #pinta TREBOL, PICA, CORAZON, DIAMANTE
-
 class Carta(pygame.sprite.Sprite):
-	def __init__(self, numero, pinta):
+	def __init__(self, numero, pinta, posx=-1, posy=-1):
 		self.pinta = pinta
 		self.numero = numero
 		self.estado = ABAJO
-
+		# pygame
 		self.image = load_image("cards\\back.png")
 		self.rect = self.image.get_rect()
-		self.rect.centerx = WIDTH / 2
-		self.rect.centery = HEIGHT / 2
+		self.rect.centerx = posx
+		self.rect.centery = posy
 	def mostrar(self):
 		if(self.estado == ABAJO):
 			self.estado = ARRIBA
-			self.image = load_image("cards\\"+self.pinta+str(self.numero)+".png")
+			self.image = load_image("cards\\"+self.pinta+str(self.numero+1)+".png")
+			# print "cards\\"+self.pinta+str(self.numero)+".png"
 	def ocultar(self):
 		if(self.estado == ARRIBA):
 			self.estado = ABAJO
@@ -30,7 +30,7 @@ class Mazo:
 	def __init__(self):
 		self.cartas = []
 		self.crearmazo()
-		# self.revolver()
+		self.revolver()
 
 	def crearmazo(self):
 		for pinta in PINTAS:
@@ -61,7 +61,7 @@ class Juego:
 				pila.append(carta_ins)
 				self.maz.cartas.remove(carta_ins)
 				if numcarta==pilaact-1: # Si es la ultima carta de la pila
-					carta_ins.estado = ARRIBA
+					carta_ins.mostrar()
 
 
 			self.pilas.append(pila)
@@ -87,10 +87,9 @@ def main():
 	j = Juego()
 	j.deal()
 	# --
-	drawcarta = Carta(2, TREBOL)
-	drawcarta.mostrar()
 
 	while True:
+		screen.blit(background, (0, 0))
 		keys = pygame.key.get_pressed()
 		for eventos in pygame.event.get():
 			if eventos.type == QUIT:
@@ -99,8 +98,20 @@ def main():
 			drawcarta.mostrar()
 		if keys[K_DOWN]:
 			drawcarta.ocultar()
-		screen.blit(background, (0, 0))
-		screen.blit(drawcarta.image, drawcarta.rect)
+
+		#dibujar pilas
+		xact = PILAS_XINICIAL
+		for i in range (7):
+			pilaact = j.pilas[i]
+			yact = PILAS_YINICIAL
+			for drawcarta in pilaact:
+				drawcarta.rect.centerx = xact
+				drawcarta.rect.centery = yact
+				screen.blit(drawcarta.image, drawcarta.rect)
+				yact += DISTY_PILAS
+			xact += DISTX_PILAS
+			
+
 		pygame.display.flip()
 
 if __name__ == "__main__":
