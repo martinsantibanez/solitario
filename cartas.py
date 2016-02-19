@@ -18,11 +18,20 @@ class Carta(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.posx = x
 		self.posy = y
+		self.posfx = self.posx
+		self.posfy = self.posy
+		self.rect.topleft = (self.posx, self.posy)
+	def arrastrar(self, x, y):
+		self.rect = self.image.get_rect()
+		self.posx = x-TAMX_CARTA/2
+		self.posy = y-TAMY_CARTA/2
 		self.rect.topleft = (self.posx, self.posy)
 	def setcenter(self, x, y):
 		self.rect = self.image.get_rect()
 		self.posx = x-TAMX_CARTA/2
 		self.posy = y-TAMY_CARTA/2
+		self.posfx = self.posx
+		self.posfy = self.posy
 		self.rect.topleft = (self.posx, self.posy)
 
 	def mostrar(self):
@@ -39,6 +48,16 @@ class Carta(pygame.sprite.Sprite):
 			self.ocultar()
 		else:
 			self.mostrar()
+
+class Area(pygame.sprite.Sprite):
+	def __init__(self, posx=-1, posy=-1):
+		self.image = load_image("area.jpg")
+		self.settopleft(posx, posy)
+	def settopleft(self, x, y):
+		self.rect = self.image.get_rect()
+		self.posx = x
+		self.posy = y
+		self.rect.topleft = (self.posx, self.posy)
 
 class Mazo:
 	def __init__(self):
@@ -58,4 +77,3 @@ class Mazo:
 	def debug(self):
 		for c in self.cartas:
 			print c.sprite
-

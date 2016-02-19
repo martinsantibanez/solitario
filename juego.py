@@ -10,8 +10,7 @@ class Juego:
 	def __init__(self):
 		self.maz = Mazo()
 		self.pilas = []
-
-
+		self.pilasareas = []
 	#reparte las cartas en las 7 pilas
 		
 	def deal(self):
@@ -23,15 +22,15 @@ class Juego:
 				carta_ins = self.maz.cartas[0]
 				carta_ins.settopleft(xact, yact)
 				carta_ins.pila = pila
-				yact += DISTY_PILAS
 				pila.append(carta_ins)
 				self.maz.cartas.remove(carta_ins)
 				if numcarta==pilaact: # Si es la ultima carta de la pila
 					carta_ins.mostrar()
-			xact += DISTX_PILAS
-
-
+				yact += DISTY_PILAS
+			pilaarea = Area(xact, PILAS_YINICIAL)
+			self.pilasareas.append(pilaarea)
 			self.pilas.append(pila)
+			xact += DISTX_PILAS
 
 	#Retorna en que pila esta la posicion pos
 	def check_pila_area(self, posx, posy):
@@ -41,8 +40,7 @@ class Juego:
 			p_xf = p_xi + TAMX_CARTA
 			p_yi = PILAS_YINICIAL
 			p_yf = p_yi + TAMY_CARTA + (DISTY_PILAS*pilaact)
-			if(posx > p_xi and posx < p_xf and posy > p_yi and posy < p_yf):
-				print pilaact
+			if(posx > p_xi and posx < p_xf and posy > p_yi):
 				return pilaact
 		return -1
 
@@ -68,8 +66,11 @@ def main():
 		if dragging:
 			desp = 0
 			for card in dragging:
-				card.setcenter(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]+desp)
+				card.arrastrar(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]+desp)
 				desp += 20
+
+		for x in j.pilasareas:
+			screen.blit(x.image, x.rect)
 		#dibujar pilas
 		for p in j.pilas:
 			for c in p:
@@ -92,21 +93,29 @@ def main():
 						clickea_index_pila = clickeada.pila.index(clickeada)
 						for cartasacar in clickeada.pila[clickea_index_pila:]:
 							#clickeada.pila.remove(cartasacar)
-							dragging.append(clickeada)
+							dragging.append(cartasacar)
 					else:
 						if clickeada == clickeada.pila[-1]:
 							clickeada.mostrar()
 			elif evento.type == pygame.MOUSEBUTTONUP:
 				pos = pygame.mouse.get_pos()
 				if dragging:
-					piladrop = j.pilas[j.check_pila_area(pos[0], pos[1])]
-					if(piladrop != -1):
+					piladrop_index = j.check_pila_area(pos[0], pos[1])
+					# print piladrop_index
+					piladrop = j.pilas[piladrop_index]
+					if(piladrop_index != -1):
 						for card in dragging:
 							card.pila.remove(card)
-							card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+							if(piladrop):
+								card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+							else:
+								card.settopleft(PILAS_XINICIAL+(piladrop_index*DISTX_PILAS), PILAS_YINICIAL)
 							piladrop.append(card)
 							card.pila = piladrop
-						# piladrop.extend(dragging)
+
+					else:
+						for card in dragging:
+							card.settopleft(card.posfx, card.posfy)
 
 
 				dragging = []
