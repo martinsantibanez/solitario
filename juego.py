@@ -15,8 +15,9 @@ class Juego:
 	#reparte las cartas en las 7 pilas
 	def on_init(self):
 		pyg.init()
-		self.screen = pyg.display.set_mode(self.size, RESIZABLE)
-		pyg.display.toggle_fullscreen()
+		self.screen = pyg.display.set_mode(self.size)
+		# self.screen = pyg.display.set_mode(self.size, FULLSCREEN)
+		# pygame.display.toggle_fullscreen()
 		pyg.display.set_caption("Un solitario mas.")
 		self.background = load_image('bg.png')
 		self.pilas = []
@@ -51,14 +52,19 @@ class Juego:
 			self.screen.blit(pinta.image, pinta.rect)
 			for carta_p in pinta.cartas:
 				self.screen.blit(carta_p.image, pinta.rect)
-		for x in self.pilasareas:
-			self.screen.blit(x.image, x.rect)
+		for area in self.pilasareas:
+			self.screen.blit(area.image, area.rect)
 		#dibujar pilas
-		for p in self.pilas:
-			for c in p:
-				self.screen.blit(c.image, c.rect)
+		for pila in self.pilas:
+			for card in pila:
+				if not card in self.dragging:
+					self.screen.blit(card.image, card.rect)
 		#dibujar mostradas
 		for card in self.mostradas:
+			if not card in self.dragging:
+				self.screen.blit(card.image, card.rect)
+		#dibujar arrastrando, al final para que no se tapen
+		for card in self.dragging:
 			self.screen.blit(card.image, card.rect)
 		pyg.display.flip()
 	def on_cleanup(self):
@@ -68,8 +74,8 @@ class Juego:
 		if evento.type == QUIT:
 			self._running = False
 		elif evento.type == pyg.KEYDOWN:
-				if evento.key == pyg.K_ESCAPE:
-					self.on_init()
+			if evento.key == pyg.K_ESCAPE:
+				self.on_init()
 		elif evento.type == pyg.MOUSEBUTTONDOWN:
 			pos = pyg.mouse.get_pos()
 			#juntar todos los sprites y guardar los clickeados.

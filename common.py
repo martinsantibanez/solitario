@@ -46,7 +46,7 @@ TAMY_CARTA = 53
 LEFT = 1
 #ventana
 WIDTH = PILAS_XINICIAL*2 + DISTX_PILAS*7
-HEIGHT = 300
+HEIGHT = 500
 
 def load_image(filename, transparent=False):
 		try: image = pygame.image.load(filename)
