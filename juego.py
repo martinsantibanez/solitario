@@ -136,15 +136,13 @@ class Juego:
 
 			elif(tipo_drop == PILASUBIR and len(self.dragging)==1):
 				if self.dragging:
-					if(self.dragging[0].pinta == piladrop_index.pinta):
-						card = self.dragging[0]
-						if card.pila:
-							card.pila.remove(card)
-						else:
-							self.mostradas.remove(card)
-						card.settopleft(piladrop_index.posx, piladrop_index.posy)
-						piladrop_index.cartas.append(card)
-						card.pila = piladrop_index
+					card = self.dragging[0]
+					if(card.pinta == piladrop_index.pinta):
+						if card.numero == 0:
+							self.subir(card, piladrop_index)
+						if piladrop_index.cartas:
+							if card.numero == piladrop_index.cartas[-1].numero+1:
+								self.subir(card, piladrop_index)
 			elif(tipo_drop == MAZO):
 				if self.maz.cartas:
 					card = self.maz.cartas[-1]
@@ -165,6 +163,15 @@ class Juego:
 			self.clicked_sprites = []
 
 # ----- FUNCIONES DEL JUEGO ----
+	def subir(self, card, piladrop_index):
+		if card.pila:
+			card.pila.remove(card)
+		else:
+			self.mostradas.remove(card)
+		card.settopleft(piladrop_index.posx, piladrop_index.posy)
+		piladrop_index.cartas.append(card)
+		card.pila = piladrop_index
+
 	def deal(self):
 		xact = PILAS_XINICIAL
 		for pilaact in range(7): 
