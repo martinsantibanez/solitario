@@ -1,6 +1,7 @@
 import random
-import pygame, sys
-from pygame.locals import *
+import pygame as pyg
+import pygame.locals as pygl
+import sys
 from common import *
 
 from cartas import *
@@ -8,11 +9,108 @@ from cartas import *
 
 class Juego:
 	def __init__(self):
-		self.maz = Mazo()
+		self._running = True
+		self.screen = None
+		self.size = self.width, self.height = WIDTH, HEIGHT
+	#reparte las cartas en las 7 pilas
+	def on_init(self):
+		pyg.init()
+		self.screen = pyg.display.set_mode(self.size)
+		pyg.display.set_caption("Un solitario mas.")
+		self.background = load_image('bg.png')
 		self.pilas = []
 		self.pilasareas = []
-	#reparte las cartas en las 7 pilas
-		
+		self.subir = [[], [], [], []]
+		self.maz = Mazo()
+		self.deal()
+	def on_execute(self):
+		self.dragging = []
+		self.clicked_sprites = []
+		if self.on_init() == False:
+			self._running = False
+		while self._running:
+			for event in pyg.event.get():
+				self.on_event(event)
+			self.on_loop()
+			self.on_render()
+		self.on_cleanup()
+	def on_loop(self):
+		if self.dragging:
+			desp = 0
+			for card in self.dragging:
+				card.arrastrar(pyg.mouse.get_pos()[0], pyg.mouse.get_pos()[1]+desp)
+				desp += 20
+	def on_render(self):
+		self.screen.blit(self.background, (0, 0))
+		for x in self.pilasareas:
+			self.screen.blit(x.image, x.rect)
+		#dibujar pilas
+		for p in self.pilas:
+			for c in p:
+				self.screen.blit(c.image, c.rect)
+		pyg.display.flip()
+	def on_cleanup(self):
+		pyg.quit()
+
+	def on_event(self, evento):
+		if evento.type == QUIT:
+			self._running = False
+		elif evento.type == pyg.KEYDOWN:
+		        if evento.key == pyg.K_ESCAPE:
+		        	#TODO: resetear juego
+		            print "TODO"
+		elif evento.type == pyg.MOUSEBUTTONDOWN:
+			pos = pyg.mouse.get_pos()
+			#juntar todos los sprites y guardar los clickeados.
+			for i in self.pilas:
+				for x in i:
+					if x.rect.collidepoint(pos):
+						self.clicked_sprites.append(x)
+
+			if self.clicked_sprites:
+				clickeada = self.clicked_sprites[-1]
+				if clickeada.estado == ARRIBA:
+					clickea_index_pila = clickeada.pila.index(clickeada) #obtener el indice de la ultima carta clickeada
+					for cartasacar in clickeada.pila[clickea_index_pila:]: #arrastrar desde la ultima hacia abajo
+						self.dragging.append(cartasacar)
+				else: #si esta hacia abajo y se clickea voltearla
+					if clickeada == clickeada.pila[-1]:
+						clickeada.mostrar()
+		elif evento.type == pyg.MOUSEBUTTONUP:
+			pos = pyg.mouse.get_pos()
+			if self.dragging:
+				piladrop_index = self.check_pila_area(pos[0], pos[1]) 
+				piladrop = self.pilas[piladrop_index]
+				if(piladrop):
+					if(piladrop_index != -1 and self.matchable(self.dragging[0], piladrop[-1])):
+						for card in self.dragging:
+							card.pila.remove(card)
+							card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+							piladrop.append(card)
+							card.pila = piladrop
+					else:
+						for card in self.dragging:
+							card.settopleft(card.posfx, card.posfy)
+				else: #Si esta vacia, revisar que sea K 
+					if piladrop_index!=-1 and self.dragging[0].numero == 12:
+						for card in self.dragging:
+							card.pila.remove(card)
+							if(card == self.dragging[0]):
+								self.dragging[0].settopleft(PILAS_XINICIAL+(piladrop_index*DISTX_PILAS), PILAS_YINICIAL)
+							else:
+								card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
+							piladrop.append(card)
+							card.pila = piladrop
+
+					else:
+						for card in self.dragging:
+							card.settopleft(card.posfx, card.posfy)
+
+
+			self.dragging = []
+			self.clicked_sprites = []
+			
+# ----- FUNCIONES DEL JUEGO ----
 	def deal(self):
 		xact = PILAS_XINICIAL
 		for pilaact in range(7): 
@@ -50,100 +148,7 @@ class Juego:
 		else:
 			return False
 
-def main():
-	screen = pygame.display.set_mode((WIDTH, HEIGHT))
-	pygame.display.set_caption("Pruebas Pygame")
-	background = load_image('bg.png')
-	
-	# juego
-	j = Juego()
-	j.deal()
-	# --
-
-	numpila = 1
-	running = 1
-	pressed = 0
-	dragging = []
-	clicked_sprites = []
-	while running:
-		screen.blit(background, (0, 0)) # fondo
-		#eventos
-		keys = pygame.key.get_pressed()
-		if dragging:
-			desp = 0
-			for card in dragging:
-				card.arrastrar(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]+desp)
-				desp += 20
-
-		for x in j.pilasareas:
-			screen.blit(x.image, x.rect)
-		#dibujar pilas
-		for p in j.pilas:
-			for c in p:
-				screen.blit(c.image, c.rect)
-
-		for evento in pygame.event.get():
-			if evento.type == QUIT:
-				sys.exit(0)
-			elif evento.type == pygame.KEYDOWN:
-			        if evento.key == pygame.K_ESCAPE:
-			        	#TODO: resetear juego
-			            print "TODO"
-			elif evento.type == pygame.MOUSEBUTTONDOWN:
-				pos = pygame.mouse.get_pos()
-				#juntar todos los sprites y guardar los clickeados.
-				for i in j.pilas:
-					for x in i:
-						if x.rect.collidepoint(pos):
-							clicked_sprites.append(x)
-
-				if clicked_sprites:
-					clickeada = clicked_sprites[-1]
-					if clickeada.estado == ARRIBA:
-						clickea_index_pila = clickeada.pila.index(clickeada) #obtener el indice de la ultima carta clickeada
-						for cartasacar in clickeada.pila[clickea_index_pila:]: #arrastrar desde la ultima hacia abajo
-							dragging.append(cartasacar)
-					else: #si esta hacia abajo y se clickea voltearla
-						if clickeada == clickeada.pila[-1]:
-							clickeada.mostrar()
-			elif evento.type == pygame.MOUSEBUTTONUP:
-				pos = pygame.mouse.get_pos()
-				if dragging:
-					piladrop_index = j.check_pila_area(pos[0], pos[1]) 
-					piladrop = j.pilas[piladrop_index]
-					if(piladrop):
-						if(piladrop_index != -1 and j.matchable(dragging[0], piladrop[-1])):
-							for card in dragging:
-								card.pila.remove(card)
-								card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
-								piladrop.append(card)
-								card.pila = piladrop
-						else:
-							for card in dragging:
-								card.settopleft(card.posfx, card.posfy)
-					else: #Si esta vacia, revisar que sea K 
-						if piladrop_index!=-1 and dragging[0].numero == 12:
-							for card in dragging:
-								card.pila.remove(card)
-								if(card == dragging[0]):
-									dragging[0].settopleft(PILAS_XINICIAL+(piladrop_index*DISTX_PILAS), PILAS_YINICIAL)
-								else:
-									card.settopleft(piladrop[-1].posx, piladrop[-1].posy+DISTY_PILAS)
-								piladrop.append(card)
-								card.pila = piladrop
-
-						else:
-							for card in dragging:
-								card.settopleft(card.posfx, card.posfy)
-
-
-				dragging = []
-				clicked_sprites = []
-
-
-		pygame.display.flip()
-
 if __name__ == "__main__":
-	pygame.init()
-	main()
+	juego = Juego()
+	juego.on_execute()
 
