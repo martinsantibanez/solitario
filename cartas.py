@@ -6,7 +6,7 @@ from common import *
 #pinta TREBOL, PICA, CORAZON, DIAMANTE
 class Carta(pygame.sprite.Sprite):
 	def __init__(self, numero, pinta, posx=-1, posy=-1):
-		self.pila = -1
+		self.pila = None
 		self.clicked = False
 		self.pinta = pinta
 		if pinta == TREBOL or pinta == PICA:
@@ -53,6 +53,18 @@ class Carta(pygame.sprite.Sprite):
 		else:
 			self.mostrar()
 
+class PilaSubir(pygame.sprite.Sprite):
+	def __init__(self, pinta, posx=-1, posy=-1):
+		self.pinta = pinta
+		self.image = load_image("cards\\"+pinta+".png")
+		self.settopleft(posx, posy)
+		self.cartas = []
+	def settopleft(self, x, y):
+		self.rect = self.image.get_rect()
+		self.posx = x
+		self.posy = y
+		self.rect.topleft = (self.posx, self.posy)
+
 class Area(pygame.sprite.Sprite):
 	def __init__(self, posx=-1, posy=-1):
 		self.image = load_image("area.jpg")
@@ -63,11 +75,18 @@ class Area(pygame.sprite.Sprite):
 		self.posy = y
 		self.rect.topleft = (self.posx, self.posy)
 
-class Mazo:
+class Mazo(pygame.sprite.Sprite):
 	def __init__(self):
+		self.image = load_image("cards\\back.png")
+		self.settopleft(MAZO_XINICIAL, MAZO_YINICIAL)
 		self.cartas = []
 		self.crearmazo()
 		self.revolver()
+	def settopleft(self, x, y):
+		self.rect = self.image.get_rect()
+		self.posx = x
+		self.posy = y
+		self.rect.topleft = (self.posx, self.posy)
 
 	def crearmazo(self):
 		for pinta in PINTAS:
