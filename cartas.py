@@ -65,16 +65,6 @@ class PilaSubir(pygame.sprite.Sprite):
 		self.posy = y
 		self.rect.topleft = (self.posx, self.posy)
 
-class Area(pygame.sprite.Sprite):
-	def __init__(self, posx=-1, posy=-1):
-		self.image = load_image("area.jpg")
-		self.settopleft(posx, posy)
-	def settopleft(self, x, y):
-		self.rect = self.image.get_rect()
-		self.posx = x
-		self.posy = y
-		self.rect.topleft = (self.posx, self.posy)
-
 class Mazo(pygame.sprite.Sprite):
 	def __init__(self):
 		self.image = load_image("cards\\back.png")

@@ -21,7 +21,6 @@ class Juego:
 		pyg.display.set_caption("Un solitario mas.")
 		self.background = load_image('bg.png')
 		self.pilas = []
-		self.pilasareas = []
 		self.pilas_subir = []
 		self.mostradas = []
 		self.maz = Mazo()
@@ -38,11 +37,20 @@ class Juego:
 			self.on_render()
 		self.on_cleanup()
 	def on_loop(self):
+		# print "maz:"+str(len(self.maz.cartas))+" mostradas:"+str(len(self.mostradas))
 		if self.dragging:
 			desp = 0
 			for card in self.dragging:
 				card.arrastrar(pyg.mouse.get_pos()[0], pyg.mouse.get_pos()[1]+desp)
-				desp += 20
+				desp += DISTY_PILAS
+		#Verificar si gano
+		f = True
+		for pilasub in self.pilas_subir:
+			if len(pilasub.cartas) != 13:
+				f = False
+		if f:
+			self.victory()
+
 	def on_render(self):
 		self.screen.blit(self.background, (0, 0))
 		#dibujar mazo
@@ -52,16 +60,15 @@ class Juego:
 			self.screen.blit(pinta.image, pinta.rect)
 			for carta_p in pinta.cartas:
 				self.screen.blit(carta_p.image, pinta.rect)
-		for area in self.pilasareas:
-			self.screen.blit(area.image, area.rect)
 		#dibujar pilas
 		for pila in self.pilas:
 			for card in pila:
 				if not card in self.dragging:
 					self.screen.blit(card.image, card.rect)
 		#dibujar mostradas
-		for card in self.mostradas:
+		for ncart, card in enumerate(self.mostradas[-CARTAS_MOSTRAR:]):
 			if not card in self.dragging:
+				card.settopleft(MOSTRADA_POSX+DISTX_MOSTRADA*ncart, MOSTRADA_POSY)
 				self.screen.blit(card.image, card.rect)
 		#dibujar arrastrando, al final para que no se tapen
 		for card in self.dragging:
@@ -94,7 +101,8 @@ class Juego:
 			if self.clicked_sprites:
 				clickeada = self.clicked_sprites[-1]
 				if tipo == MOSTRADAS:
-					self.dragging.append(clickeada)
+					if clickeada == self.mostradas[-1]:
+						self.dragging.append(clickeada)
 				elif tipo == PILA:
 					if clickeada.estado == ARRIBA:
 						clickea_index_pila = clickeada.pila.index(clickeada) #obtener el indice de la ultima carta clickeada
@@ -145,15 +153,15 @@ class Juego:
 								self.subir(card, piladrop_index)
 			elif(tipo_drop == MAZO):
 				if self.maz.cartas:
-					card = self.maz.cartas[-1]
-					self.maz.cartas.remove(card)
-					card.settopleft(MOSTRADA_POSX, MOSTRADA_POSY)
-					card.mostrar()
-					self.mostradas.append(card)
+					for card in self.maz.cartas[:CARTAS_MOSTRAR]:
+						self.maz.cartas.remove(card)
+						card.mostrar()
+						self.mostradas.append(card)
 				else:
-					for card in self.mostradas:
-						self.mostradas.remove(card)
+					while self.mostradas:
+						card = self.mostradas[0]
 						self.maz.cartas.append(card)
+						self.mostradas.remove(card)
 			#elif(tipo_drop == MOSTRADAS):
 
 
@@ -163,6 +171,9 @@ class Juego:
 			self.clicked_sprites = []
 
 # ----- FUNCIONES DEL JUEGO ----
+	def victory(self):
+		print "GANASTEEEEEEEEE"
+		self._running = False
 	def subir(self, card, piladrop_index):
 		if card.pila:
 			card.pila.remove(card)
@@ -186,8 +197,6 @@ class Juego:
 				if numcarta==pilaact: # Si es la ultima carta de la pila
 					carta_ins.mostrar()
 				yact += DISTY_PILAS
-			pilaarea = Area(xact, PILAS_YINICIAL)
-			self.pilasareas.append(pilaarea)
 			self.pilas.append(pila)
 			xact += DISTX_PILAS
 

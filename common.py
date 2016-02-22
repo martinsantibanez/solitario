@@ -41,7 +41,10 @@ MOSTRADA_POSY = MAZO_YINICIAL
 #tamano de las cartas
 TAMX_CARTA = 39
 TAMY_CARTA = 53
-
+#distancia entre las que se muestran
+DISTX_MOSTRADA = 10
+#cartas a mostrar
+CARTAS_MOSTRAR = 3
 #pygame
 LEFT = 1
 #ventana
